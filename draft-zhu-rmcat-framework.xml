@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<!-- used by XSLT processors -->
+<?rfc strict="yes" ?>
+<!-- give errors regarding ID-nits and DTD validation -->
+<!-- control the table of contents (ToC) -->
+<?rfc toc="yes"?>
+<!-- generate a ToC -->
+<?rfc tocdepth="4"?>
+<!-- the number of levels of subsections in ToC. default: 3 -->
+<!-- control references -->
+<?rfc symrefs="yes"?>
+<!-- use symbolic references tags, i.e, [RFC2119] instead of [1] -->
+<?rfc sortrefs="yes" ?>
+<!-- sort the reference entries alphabetically -->
+<!-- control vertical white space 
+     (using these PIs as follows is recommended by the RFC Editor) -->
+<?rfc compact="yes" ?>
+<!-- do not start each main section on a new page -->
+<?rfc subcompact="no" ?>
+<!-- keep one blank line between list items -->
+<!-- end of list of popular I-D processing instructions -->
+<rfc category="info" docName="draft-zhu-rmcat-framework-00"
+     ipr="trust200902">
+  <!-- category values: std, bcp, info, exp, and historic
+     ipr values: full3667, noModification3667, noDerivatives3667
+     you can add the attributes updates="NNNN" and obsoletes="NNNN" 
+     they will automatically be output with "(if approved)" -->
+
+  <front>
+    <!-- The abbreviated title is used in the page header - it is only necessary if the
+     full title is longer than 39 characters -->
+
+    <title abbrev="RMCAT framework">Framework for Real-time Media Congestion
+    Avoidance Techniques</title>
+
+    <!-- add 'role="editor"' below for the editors if appropriate -->
+
+    <!-- Another author who claims to be an editor -->
+    <author fullname="Xianqing Zhu" initials="X" surname="Zhu">
+      <organization>Cisco Systems</organization>
+
+      <address>
+        <postal>
+          <street>12515 Research Blvd., Building 4</street>
+          <city>Austin</city>
+          <region>TX</region>
+          <code>78759</code>
+          <country>USA</country>
+        </postal>
+
+        <phone></phone>
+
+        <facsimile></facsimile>
+
+        <email>xiaoqzhu@cisco.com </email>
+
+        <uri></uri>
+      </address>
+    </author>
+
+
+    <author fullname="Zaheduzzaman Sarker" initials="Z." surname="Sarker">
+      <organization>Ericsson AB</organization>
+
+      <address>
+        <postal>
+          <street></street>
+
+          <city>Luleae</city>
+
+          <region></region>
+
+          <code></code>
+
+          <country>Sweden</country>
+        </postal>
+
+        <phone></phone>
+
+        <email>zaheduzzaman.sarker@ericsson.com</email>
+      </address>
+    </author>
+
+    <date day="" month="" year="2016" />
+
+    <!-- If the month and year are both specified and are the current ones, xml2rfc will fill
+     in the current day for you. If only the current year is specified, xml2rfc will fill
+	 in the current day and month for you. If the year is not the current one, it is 
+	 necessary to specify at least a month (xml2rfc assumes day="1" if not specified for the 
+	 purpose of calculating the expiry date).  With drafts it is normally sufficient to 
+	 specify just the year. -->
+
+    <!-- Meta-data Declarations -->
+
+    <area>RAI</area>
+
+    <workgroup>RMCAT WG</workgroup>
+
+    <!-- WG name at the upperleft corner of the doc,
+     IETF is fine for individual submissions.
+	 If this element is not present, the default is "Network Working Group",
+     which is used by the RFC Editor as a nod to the history of the IETF. -->
+
+    <keyword>RTP</keyword>
+
+    <!-- Keywords will be incorporated into HTML output
+     files in a meta tag but they have no effect on text or nroff
+     output. If you submit your draft to the RFC Editor, the
+     keywords will be used for the search engine. -->
+
+    <abstract>
+
+    <t>Congestion control is an essential element in ensuring fair bandwidth
+       usage and preventing congesion collapse for traffic sharing the Internet.
+       For interactive real-time media traffic such as video conferencing,
+       design of congestion control solution also needs to account for
+       many other factors such as the requirement for low latency packet delivery
+       and interactions with live video encoder. 
+
+       This document describes a common framework with core functional
+       building blocks for proposed real-time media congestion solutions.
+     </t>
+
+    </abstract>
+  </front>
+
+  <middle>
+    <section title="Introduction">
+
+    <t>Given increasing amount of interactive real-time media traffic
+       over the Internet, such as video conferencing, it is important
+       that these applications employ proper congestion control
+       mechanisms so to avoid congestion collapse. The RTP Media
+       Congestion Avoidance Techniques (RMCAT) working group was
+       chartered to develop and standardize an effective congestion
+       control solution. The working group document 
+       <xref target="I-D.ietf-rmcat-cc-requirements"></xref>
+       specifies the list of requirements of a viable solution.</t>
+
+    <t>This document outlines a common framework for candidate
+       congestion control solutions currently considered by
+       the RMCAT working group. The framework contains several
+       functionals modules that are needed for properly
+       interacting with live media/video codec and network
+       transport.</t>
+
+    </section>
+
+    <section title="Key Words for Requirements">
+      <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+      "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+      document are to be interpreted as described in <xref
+      target="RFC2119"></xref>.</t>
+    </section>
+
+    <section title="Common Terminology and Funtional Modules">
+   
+<t>A viable solution for real-time media congestion control needs
+to comprise of several common modules. This section provides 
+a brief description of them and their respective functionalities. 
+It is required that drafts on candidate RMCAT solutions follow
+a common set of terminologies. </t> 
+
+<t><list style="symbols">
+
+<t>Network Congestion Controller (NCC): this is the
+core module for estimating available bandwidth over
+the network based on periodic RTCP feedback reports from 
+the receiver. Input of this module include periodic RTCP
+feedback reports as well as shared states of other flows
+in the same application sharing the same transport.
+Output of this module is the estimated available 
+bandwidth. This module contains key functions and
+calculations required to detect congestion and estimate
+available bandwidth on the transport. The statistics gather
+via RTCP feedback reports are fed to this module for such
+purpose. Different RMCAT solutions employ different
+algorithms in detecting congestion and estimating
+available bandwidth for its media flow. It also
+possible that multiple media streams are multplexed
+over a single transport, hence share the same congestion
+control module in aggregation. 
+</t>
+
+<t>Transmission Queue: this module is needed
+to absorb the instantaneous mismatch between
+output from a live video encoder and regulated
+outgoing traffic. The Transmission Queue schedules
+outgoing traffic according to sending rate
+recommended by the Rate Controller. It reports
+back its occupancy level to the Rate Controller
+module to assist its future decisions on target
+video rate, sending rate, and probing/padding
+rate. 
+</t>
+
+<t>Rate Controller: this module takes as input
+the estimated available bandwidth from the 
+Network Congestion Control module, shared states
+on other flows, as well as occupancy level of
+the Transmission Queue. It makes holistic decisions
+on: a) target video rate for the live video
+encoder; b) sending rate for regulating outgoing
+traffic from the Transmission Queue; and c) 
+rate of FEC/padding packets when needed. 
+In the case where multiple media streams
+share a single transport and a common Network
+Congestion Controller (for estimating available
+bandwidth in aggregation), the Rate Controller
+is also responsible for distributing available
+bandwidth amongst different media streams according
+to their relative priorities and based on
+Shared State information.</t>
+
+<t>FEC/Padding Packet Generator: during periods of
+bandwidth probing or when forward error protection is
+needed during periods of likely packet losses, 
+additional padding or or forward error correction (FEC)
+packets are generated by the FEC/Padding Packet Generator.
+While RMCAT solutions do not specify what FEC scheme to
+use, nor how FEC or padding packets should be generated,
+a complete congestion control solution needs tospecify
+total rate of the FEC/Padding packets. Decision on how
+the rate of FEC/padding is carried out by the Rate Controller
+module. </t>
+
+<t>
+Live Video Encoder: the sender typically also contains a live
+video encoder, which adjusts the its encoding parameters
+according to the target video rate set by the Rate Controller.
+The output rate from the Video Encoder may deviate from this
+target due to uncertainty in the captured video content charasteristics
+and the encoder rate control process. Note that internal 
+operations of the Video Encoder (i.e., how video encoder rate
+control works) is out of scope for RMCAT. This module is
+should be considered as a black box as part of the RMCAT solution
+framework. 
+</t>
+
+</list></t>
+
+</section>
+
+<section title = "Example Configurations">
+
+
+<section title = "Example Configurations for a Single Stream"
+	 anchor = "subsec-config-single-stream">
+
+        <t><figure anchor="fig-rmcat-solution-framework"
+                   title="RMCAT Solution Framework at the Sender: Single Stream">
+     
+<artwork><![CDATA[
+
+                                                   RTCP Feedback
++---------+                       +-------------+   Reports
+|  Live   |                       |   Network   |<---------------- 
+|  Video  |<----------------+     |  Congestion |
+| Encoder |                 |     |  Controller |<------+
++---------+                 |     +-------------+       |  Shared
+    ||                      |            |(1)           |  States
+    ||                      |            |              +----------  
+    ||                      |           \|/             |
+    ||    +--------------+  |  (4) +-------------+      |
+    ||    | FEC/Padding  |  +------|    Rate     |<-----+    
+    ||    |  Packet      |<--------| Controller  | 
+    ||    | Generator    |    (5)  +-------------+
+    ||    +--------------+          (3)|   /|\ 
+    ||           ||                    |    |
+    ||           || FEC/Padding       \|/   |(2)         
+    ||           || Packets       +---------------+   
+    ||           \\=============> |  Transmission | 
+    \\==========================> |      Queue    |==============>
+        Encoded Video Packets     +---------------+   Outgoing  
+                                                       Packets     
+                
+]]></artwork></figure></t>
+
+<t><xref target="fig-rmcat-solution-framework"></xref> 
+shows an example configuration at the sender for 
+supporting a single media stream. The Network Congestion
+Controller (NCC) calculates estimated available
+bandwidth (1) based on periodic RTCP feedback reports
+and shared states about other streams.  The Rate Controller
+takes as input the estimated available bandwidth (1), 
+the current occupancy level of the Transmission Queue (2), 
+as well as the shared states on other flows, and calculates
+sending rate (3) for the Transmission Queue, video target
+rate (4) as input to the live video encoder, and rate of
+FEC/Padding packets (5) if they are needed. The Transmission
+Queue holds output packets from both the Live Video Encoder
+and the FEC/Padding packet generator, and regulates
+its outgoing traffic according to the sending rate (3)
+specified by Rate Controller. </t>
+
+<t>Obviously, it is possible for a candidate RMCAT 
+solution to contain alternative configurations (wirings)
+between the functional modules, as well as alterantive
+implementations of each function module. It is required
+that the candidate solution draft specify how they align
+to this framework. </t>
+
+</section>
+
+
+<section title = "Example Configurations for Multiple Streams"
+	 anchor = "subsec-config-multiple-streams">
+
+      <t><figure anchor = "fig-rmcat-solution-multi-stream"
+		 title = "RMCAT Solution Framework at the Sender: Multiple Streams">
+          <artwork><![CDATA[  
+
+     +--------------------------+    +---------------------------+
+     |       Video encoder      |    |        Video encoder      |
+     +--------------------------+    +---------------------------+
+         /|\           ||                 /|\         ||       
+       (4)|            ||               (4)|       (2)||
+          |           \||/                 |         \||/ 
+                 +-------------+                +--------------+
+             (3) |Transmission |(2)         (3) | Transmission |(2)
+           ----->|   Queue     |--->       ---->|    Queue     |--->
+                 +-------------+                +--------------+
+                       ||                             ||
+                      \||/                           \||/
+
+
+        +------------+      +------------+
+        |  Network   | (1)  |    Rate    |--> (3)
+        | Congestion |----->| Controller |--> (4)
+        | Controller |      |            |--> (5)
+        --------------      +------------+
+           /|\    /|\           /|\
+   RTCP     |      |             |
+   Feedback |      +------+-----+ 
+   Reports  |             | Shared
+            |             | States
+          
+]]></artwork>
+        </figure></t>
+
+
+<t><xref target="fig-rmcat-solution-multi-stream"></xref> shows an example
+configuration for multiple video streams sharing a common Network Congestion
+Controller (NCC). The NCC calculates an aggregated estimated available
+bandwidth (1) based on periodic RTCP feedback reports and Shared States (?). 
+Based on such information and occupancy level of the transmission
+queue for each substream (2), the Rate Controller divides up the aggregate
+estimated bandwidth amongst sub-streams based on their relative priority levels, 
+and subsequently regulates the sending rate of each Transmission Queue (3), 
+target video rate (4), and FEC/padding rate (5) for each sub-stream. For
+sake of abrevity the role of FEC/padding packet generators are omitted
+in the above figure.   </t>
+    
+</section>
+
+</section>
+
+    <section anchor="Acknowledgements" title="Acknowledgements">
+      <t>The RMCAT design team discussions contributed to this memo.</t>
+    </section>
+
+    <!-- Possibly a 'Contributors' section ... -->
+
+    <section anchor="IANA" title="IANA Considerations">
+      <t>This memo includes no request to IANA.</t>
+    </section>
+
+    <section anchor="Security" title="Security Considerations">
+      <t>TBD</t>
+    </section>
+  </middle>
+
+  <back>
+    <references title="Normative References">
+      <?rfc include="reference.I-D.ietf-rmcat-cc-requirements"?>
+
+      <?rfc include="reference.I-D.ietf-rmcat-eval-criteria"?>
+
+      <?rfc include="reference.I-D.ietf-avtcore-rtp-circuit-breakers"
+?>
+
+      <?rfc include="reference.RFC.2119"?>
+
+      <?rfc include="reference.RFC.3550"?>
+
+      <?rfc include="reference.RFC.3551"?>
+
+      <?rfc include="reference.RFC.4585"?>
+
+      <?rfc include="reference.RFC.5104"?>
+
+      <?rfc include="reference.RFC.4566"?>
+
+      <?rfc include="reference.RFC.5506"?>
+
+      <?rfc include="reference.RFC.5761"?>
+
+      <?rfc include="reference.RFC.5450"?>
+    </references>
+
+    <references title="Informative References">
+      <?rfc include="reference.RFC.0768"?>
+
+      <?rfc include="reference.RFC.5681"?>
+
+      <?rfc include="reference.RFC.4340"?>
+
+      <?rfc include="reference.RFC.5348"?>
+
+      <?rfc include="reference.RFC.5109"?>
+
+      <?rfc include="reference.RFC.6865"?>
+
+      <?rfc include="reference.RFC.6330"?>
+
+      <?rfc ?>
+    </references>
+  </back>
+</rfc>
